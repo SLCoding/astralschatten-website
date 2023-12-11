@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ASTRALSCHATTEN Album</title>
+    <title>Astralschatten - Nebel des Kosmos</title>
+    <!-- Include FontAwesome CSS via CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         body {
             display: flex;
@@ -15,17 +17,32 @@
             color: #fff; /* Set text color to white */
         }
         #album-container {
-            max-width: 90%;
-            max-height: 90vh;
+            width: 90%;
+            max-width: 90vh; /* Limit to 90% of viewport height for a square container */
             margin: 5%;
             overflow: hidden;
             position: relative;
             border-radius: 10px; /* Optional: Add border-radius for rounded corners */
         }
-        #album-cover img {
+        #album-cover {
             width: 100%;
+            height: 80%; /* Adjusted height to make space for the progress bar */
+            object-fit: contain; /* Ensure the entire image is contained within the square */
+        }
+        #progress-bar {
+            width: 100%;
+            height: 10px;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            overflow: hidden;
+            background-color: rgba(255, 255, 255, 0.2); /* Slightly translucent white background */
+            border-radius: 0 0 10px 10px; /* Rounded corners only at the bottom */
+        }
+        #progress {
+            width: 0; /* Initial width of the progress bar (0%) */
             height: 100%;
-            object-fit: contain; /* Ensure the entire image is always shown */
+            background-color: #800080; /* Purple color for the progress indicator */
         }
         #play-pause-container {
             position: absolute;
@@ -34,37 +51,89 @@
             transform: translate(-50%, -50%);
         }
         #play-pause {
-            font-size: 24px;
+            font-size: 36px; /* 50% bigger */
             cursor: pointer;
             background-color: rgba(255, 255, 255, 0.5); /* Translucent white */
-            border-radius: 50%; /* Make it circular */
-            padding: 10px; /* Add padding for spacing */
+            border-radius: 50%; /* Make it a circle */
+            width: 60px; /* Set width and height to ensure a perfect circle */
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s;
+        }
+
+        #play-pause:hover {
+            background-color: rgba(255, 255, 255, 0.7); /* Lighten the background on hover */
+        }
+
+        #play-pause:active {
+            background-color: rgba(255, 255, 255, 0.9); /* Darken the background on click */
         }
     </style>
 </head>
 <body>
     <div id="album-container">
         <!-- Replace 'img/cover.jpg' with the actual relative path to your album cover image -->
-        <img src="img/cover.jpg" alt="ASTRALSCHATTEN Album Cover">
+        <img id="album-cover" src="img/cover.jpg" alt="Nebel des Kosmos Album Cover">
+        <div id="progress-bar">
+            <progress id="progress" value="0" max="100"></progress>
+        </div>
         <div id="play-pause-container">
-            <div id="play-pause">&#9654;</div>
+            <!-- Provide a play button for the user to initiate playback -->
+            <div id="play-pause"><i class="fas fa-play"></i></div>
         </div>
     </div>
 
     <!-- Replace 'media/gute_musik_final.mp3' with the actual relative path to your MP3 file -->
-    <audio id="audio" src="media/gute_musik_final.mp3" autoplay></audio>
+    <audio id="audio" src="media/gute_musik_final.mp3" loop></audio>
+
+    <!-- Include FontAwesome script via CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
 
     <script>
-        document.getElementById('play-pause').addEventListener('click', function() {
+        document.addEventListener('DOMContentLoaded', function() {
             var audio = document.getElementById('audio');
-            if (audio.paused) {
+            var playPauseButton = document.getElementById('play-pause');
+            var progressBar = document.getElementById('progress');
+            var progressContainer = document.getElementById('progress-bar');
+
+            function play() {
                 audio.play();
-                this.innerHTML = '&#9616;&#9616;'; // Pause icon
-            } else {
-                audio.pause();
-                this.innerHTML = '&#9654;'; // Play icon
+                playPauseButton.innerHTML = '<i class="fas fa-pause"></i>'; // Pause icon
             }
-        })
+
+            function pause() {
+                audio.pause();
+                playPauseButton.innerHTML = '<i class="fas fa-play"></i>'; // Play icon
+            }
+
+            function updateProgressBar() {
+                var value = (audio.currentTime / audio.duration) * 100;
+                progressBar.style.width = value + '%';
+            }
+
+            function togglePlayPause() {
+                if (audio.paused) {
+                    play();
+                } else {
+                    pause();
+                }
+            }
+
+            playPauseButton.addEventListener('click', togglePlayPause);
+
+            // Update the progress bar as the audio plays
+            audio.addEventListener('timeupdate', updateProgressBar);
+
+            // Update the progress bar width when the user clicks on it
+            progressContainer.addEventListener('click', function(e) {
+                var clickX = e.clientX - progressContainer.getBoundingClientRect().left;
+                var widthPercent = (clickX / progressContainer.offsetWidth) * 100;
+                progressBar.style.width = widthPercent + '%';
+                audio.currentTime = (widthPercent / 100) * audio.duration;
+            });
+        });
     </script>
 </body>
 </html>
