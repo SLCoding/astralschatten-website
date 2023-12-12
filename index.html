@@ -6,6 +6,8 @@
     <title>Astralschatten - Nebel des Kosmos</title>
     <!-- Include FontAwesome CSS via CDN -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Include Howler.js via CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js"></script>
     <style>
         body {
             display: flex;
@@ -85,53 +87,55 @@
         </div>
     </div>
 
-    <!-- Replace 'media/gute_musik_final.mp3' with the actual relative path to your MP3 file -->
-    <audio id="audio" src="media/gute_musik_final.mp3" loop></audio>
-
-    <!-- Include FontAwesome script via CDN -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
-
+    <!-- Use Howler.js for audio playback -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            var audio = document.getElementById('audio');
+            var sound = new Howl({
+                src: ['media/gute_musik_final.mp3'],
+                loop: true,
+                volume: 0.5, // Adjust the volume as needed
+                autoplay: true, // Autoplay the audio
+                onplay: function() {
+                    playPauseButton.innerHTML = '<i class="fas fa-pause"></i>'; // Pause icon
+                },
+                onpause: function() {
+                    playPauseButton.innerHTML = '<i class="fas fa-play"></i>'; // Play icon
+                },
+                onend: function() {
+                    playPauseButton.innerHTML = '<i class="fas fa-play"></i>'; // Reset to play icon when the audio ends
+                }
+            });
+
             var playPauseButton = document.getElementById('play-pause');
             var progressBar = document.getElementById('progress');
             var progressContainer = document.getElementById('progress-bar');
 
-            function play() {
-                audio.play();
-                playPauseButton.innerHTML = '<i class="fas fa-pause"></i>'; // Pause icon
-            }
-
-            function pause() {
-                audio.pause();
-                playPauseButton.innerHTML = '<i class="fas fa-play"></i>'; // Play icon
-            }
-
             function updateProgressBar() {
-                var value = (audio.currentTime / audio.duration) * 100;
+                var value = (sound.seek() / sound.duration()) * 100;
                 progressBar.style.width = value + '%';
             }
 
             function togglePlayPause() {
-                if (audio.paused) {
-                    play();
+                if (sound.playing()) {
+                    sound.pause();
                 } else {
-                    pause();
+                    sound.play();
                 }
             }
 
             playPauseButton.addEventListener('click', togglePlayPause);
 
             // Update the progress bar as the audio plays
-            audio.addEventListener('timeupdate', updateProgressBar);
+            sound.on('play', function() {
+                setInterval(updateProgressBar, 500); // Update every 500 milliseconds
+            });
 
             // Update the progress bar width when the user clicks on it
             progressContainer.addEventListener('click', function(e) {
                 var clickX = e.clientX - progressContainer.getBoundingClientRect().left;
                 var widthPercent = (clickX / progressContainer.offsetWidth) * 100;
                 progressBar.style.width = widthPercent + '%';
-                audio.currentTime = (widthPercent / 100) * audio.duration;
+                sound.seek((widthPercent / 100) * sound.duration());
             });
         });
     </script>
